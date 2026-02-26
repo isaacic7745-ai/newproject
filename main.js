@@ -172,9 +172,10 @@ function renderCafes(filter = '') {
         (cafe.name && cafe.name.toLowerCase().includes(filter.toLowerCase()))
     );
 
-    filteredCafes.forEach((cafe) => {
+    filteredCafes.forEach((cafe, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
+            <td data-label="No.">${index + 1}</td>
             <td data-label="지역">${cafe.region}</td>
             <td data-label="카페이름">${cafe.name}</td>
             <td data-label="카페링크"><a href="${cafe.link}" target="_blank" class="cafe-url">${cafe.link}</a></td>
