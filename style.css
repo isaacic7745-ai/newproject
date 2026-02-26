@@ -86,6 +86,16 @@ body {
 }
 
 .auth-card h2 { margin-bottom: 1.5rem; color: var(--header-text); }
+
+.auth-logo {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
 .auth-card form { display: flex; flex-direction: column; gap: 1rem; }
 .auth-card input {
     padding: 0.8rem;
