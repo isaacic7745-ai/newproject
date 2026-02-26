@@ -1,19 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotto Number Generator</title>
+    <title>전국 맘카페 리스트</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <div class="theme-toggle">
-            <button id="theme-btn">🌙 Dark Mode</button>
-        </div>
-        <h1>Lotto Number Generator</h1>
-        <div class="lotto-numbers"></div>
-        <button id="generator-btn">Generate Numbers</button>
+        <header>
+            <div class="theme-toggle">
+                <button id="theme-btn">🌙 다크 모드</button>
+            </div>
+            <h1>전국 맘카페 리스트</h1>
+            <p>지역별 주요 맘카페 정보를 확인하세요.</p>
+        </header>
+
+        <main>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="지역 또는 카페 이름으로 검색하세요...">
+            </div>
+
+            <div class="table-wrapper">
+                <table id="cafe-table">
+                    <thead>
+                        <tr>
+                            <th>지역</th>
+                            <th>카페이름</th>
+                            <th>카페링크</th>
+                            <th>비고</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cafe-list">
+                        <!-- 데이터는 JavaScript로 삽입됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2026 맘카페 리스트 가이드</p>
+        </footer>
     </div>
     <script src="main.js"></script>
 </body>
