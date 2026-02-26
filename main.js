@@ -258,7 +258,9 @@ function migrateLocalData() {
 
 function loadCafes() {
     migrateLocalData();
-    db.ref('cafes').on('value', (snapshot) => {
+    
+    // First, get the data once to ensure cafeList is populated immediately
+    db.ref('cafes').once('value').then((snapshot) => {
         const data = snapshot.val();
         cafeList = [];
         if (data) {
@@ -267,6 +269,18 @@ function loadCafes() {
             });
         }
         renderCafes(searchInput.value);
+        
+        // Then setup the real-time listener for future changes
+        db.ref('cafes').on('value', (snapshot) => {
+            const data = snapshot.val();
+            cafeList = [];
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    cafeList.push({ id: key, ...data[key] });
+                });
+            }
+            renderCafes(searchInput.value);
+        });
     });
 }
 
