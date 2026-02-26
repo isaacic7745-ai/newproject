@@ -95,6 +95,64 @@ h1 {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+.input-section {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.input-section h3 {
+    margin-bottom: 1rem;
+    color: var(--header-text);
+}
+
+.input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.5fr auto;
+    gap: 0.5rem;
+}
+
+.input-group input {
+    padding: 0.6rem;
+    border-radius: 0.4rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: var(--accent-color);
+}
+
+#add-btn {
+    padding: 0.6rem 1.2rem;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+#add-btn:hover {
+    opacity: 0.9;
+}
+
+@media (max-width: 850px) {
+    .input-group {
+        grid-template-columns: 1fr 1fr;
+    }
+    #add-btn {
+        grid-column: span 2;
+    }
+}
+
 .table-wrapper {
     background-color: var(--card-bg);
     border-radius: 0.75rem;

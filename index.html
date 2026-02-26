@@ -17,6 +17,19 @@
         </header>
 
         <main>
+            <section class="input-section">
+                <h3>새 카페 추가</h3>
+                <form id="cafe-form">
+                    <div class="input-group">
+                        <input type="text" id="input-region" placeholder="지역 (예: 경기/수원)" required>
+                        <input type="text" id="input-name" placeholder="카페 이름" required>
+                        <input type="url" id="input-link" placeholder="카페 링크 (https://...)" required>
+                        <input type="text" id="input-note" placeholder="비고">
+                        <button type="submit" id="add-btn">추가하기</button>
+                    </div>
+                </form>
+            </section>
+
             <div class="search-container">
                 <input type="text" id="search-input" placeholder="지역 또는 카페 이름으로 검색하세요...">
             </div>
