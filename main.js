@@ -1,7 +1,8 @@
 // State Management
 let cafeList = JSON.parse(localStorage.getItem('cafeList')) || [];
 let users = JSON.parse(localStorage.getItem('users')) || [
-    { username: '관리자', password: '1234' }
+    { username: '관리자', password: '1234' },
+    { username: '이성민', password: '1234' }
 ];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let editIndex = -1; // To track which cafe is being edited
