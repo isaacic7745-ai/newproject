@@ -98,7 +98,25 @@ themeBtn.addEventListener('click', () => {
 
 // --- Firebase Realtime Database Logic ---
 
+function migrateLocalData() {
+    if (currentUser && currentUser.username === '관리자') {
+        const localData = JSON.parse(localStorage.getItem('cafeList'));
+        if (localData && localData.length > 0) {
+            console.log('로컬 데이터를 클라우드로 동기화 중...');
+            localData.forEach(cafe => {
+                // 기존 데이터에 id가 있을 수 있으므로 id 제외하고 업로드
+                const { id, ...cleanData } = cafe;
+                db.ref('cafes').push(cleanData);
+            });
+            // 동기화 완료 후 로컬 데이터 삭제 (중복 방지)
+            localStorage.removeItem('cafeList');
+            alert('이전 PC에 저장된 데이터를 클라우드로 안전하게 옮겼습니다!');
+        }
+    }
+}
+
 function loadCafes() {
+    migrateLocalData(); // 데이터 로드 전 마이그레이션 실행
     db.ref('cafes').on('value', (snapshot) => {
         const data = snapshot.val();
         cafeList = [];
