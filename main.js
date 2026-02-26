@@ -147,22 +147,39 @@ if (importBtn) {
                     return;
                 }
 
-                if (confirm(`${data.length}개의 데이터를 클라우드에 추가하시겠습니까?`)) {
-                    const promises = data.map(item => {
-                        const cafeData = {
-                            region: item['지역'] || '',
-                            name: item['카페이름'] || '',
-                            link: item['카페링크'] || '',
-                            note: item['비고'] || ''
-                        };
-                        return db.ref('cafes').push(cafeData);
-                    });
-                    
-                    Promise.all(promises).then(() => {
-                        alert('모든 데이터 업로드가 완료되었습니다!');
-                        excelUpload.value = '';
-                    }).catch(err => {
-                        console.error(err);
+                            if (confirm(`${data.length}개의 데이터를 클라우드에 추가하시겠습니까?`)) {
+                                let addedCount = 0;
+                                let skippedCount = 0;
+                
+                                const promises = data.map(item => {
+                                    const link = (item['카페링크'] || '').trim();
+                                    
+                                    // Duplicate check against current cafeList
+                                    const isDuplicate = cafeList.some(c => c.link.toLowerCase() === link.toLowerCase());
+                                    
+                                    if (isDuplicate) {
+                                        skippedCount++;
+                                        return Promise.resolve();
+                                    }
+                
+                                    addedCount++;
+                                    const cafeData = {
+                                        region: item['지역'] || '',
+                                        name: item['카페이름'] || '',
+                                        link: link,
+                                        note: item['비고'] || ''
+                                    };
+                                    return db.ref('cafes').push(cafeData);
+                                });
+                                
+                                Promise.all(promises).then(() => {
+                                    if (skippedCount > 0) {
+                                        alert(`업로드 완료! (추가: ${addedCount}건, 중복 제외: ${skippedCount}건)`);
+                                    } else {
+                                        alert('모든 데이터 업로드가 완료되었습니다!');
+                                    }
+                                    excelUpload.value = '';
+                                }).catch(err => {                        console.error(err);
                         alert('일부 데이터 업로드 중 오류가 발생했습니다.');
                     });
                 }
@@ -285,9 +302,19 @@ if (cafeForm) {
         const cafeData = {
             region: document.getElementById('input-region').value,
             name: document.getElementById('input-name').value,
-            link: document.getElementById('input-link').value,
+            link: document.getElementById('input-link').value.trim(),
             note: document.getElementById('input-note').value
         };
+
+        // Duplicate Check: Check if the link already exists in the list (excluding current edit item)
+        const isDuplicate = cafeList.some(cafe => 
+            cafe.link.toLowerCase() === cafeData.link.toLowerCase() && cafe.id !== editId
+        );
+
+        if (isDuplicate) {
+            alert('이미 등록 된 카페입니다.');
+            return;
+        }
 
         if (editId) {
             db.ref('cafes/' + editId).set(cafeData).then(() => {
