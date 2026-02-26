@@ -6,7 +6,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyA9q2WlNw9ySxMlx80U07xdI9nfbH-cNZE",
     authDomain: "mom-cafe-list-1772089964.firebaseapp.com",
     messagingSenderId: "578037896725",
-    databaseURL: "https://mom-cafe-list-1772089964-default-rtdb.firebaseio.com"
+    databaseURL: "https://mom-cafe-list-1772089964-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 // Initialize Firebase
@@ -20,7 +20,7 @@ let users = JSON.parse(localStorage.getItem('users')) || [
     { username: '이성민', password: '1234' }
 ];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-let editId = null; // Changed from index to ID for Firebase
+let editId = null;
 
 // DOM Elements
 const authOverlay = document.getElementById('auth-overlay');
@@ -102,21 +102,18 @@ function migrateLocalData() {
     if (currentUser && currentUser.username === '관리자') {
         const localData = JSON.parse(localStorage.getItem('cafeList'));
         if (localData && localData.length > 0) {
-            console.log('로컬 데이터를 클라우드로 동기화 중...');
             localData.forEach(cafe => {
-                // 기존 데이터에 id가 있을 수 있으므로 id 제외하고 업로드
                 const { id, ...cleanData } = cafe;
                 db.ref('cafes').push(cleanData);
             });
-            // 동기화 완료 후 로컬 데이터 삭제 (중복 방지)
             localStorage.removeItem('cafeList');
-            alert('이전 PC에 저장된 데이터를 클라우드로 안전하게 옮겼습니다!');
+            alert('기존 PC의 데이터를 클라우드로 동기화했습니다. 이제 모든 기기에서 확인 가능합니다!');
         }
     }
 }
 
 function loadCafes() {
-    migrateLocalData(); // 데이터 로드 전 마이그레이션 실행
+    migrateLocalData();
     db.ref('cafes').on('value', (snapshot) => {
         const data = snapshot.val();
         cafeList = [];
@@ -183,15 +180,17 @@ if (cafeForm) {
         };
 
         if (editId) {
-            db.ref('cafes/' + editId).set(cafeData);
-            editId = null;
-            addBtn.textContent = '추가하기';
-            addBtn.style.backgroundColor = 'var(--accent-color)';
+            db.ref('cafes/' + editId).set(cafeData).then(() => {
+                editId = null;
+                addBtn.textContent = '추가하기';
+                addBtn.style.backgroundColor = 'var(--accent-color)';
+                cafeForm.reset();
+            }).catch(err => alert('수정 권한 오류가 발생했습니다. DB 설정을 확인해주세요.'));
         } else {
-            db.ref('cafes').push(cafeData);
+            db.ref('cafes').push(cafeData).then(() => {
+                cafeForm.reset();
+            }).catch(err => alert('추가 권한 오류가 발생했습니다. DB 설정을 확인해주세요.'));
         }
-
-        cafeForm.reset();
     });
 }
 
@@ -199,10 +198,12 @@ window.editCafe = function(id) {
     if (currentUser.username !== '관리자') return;
     
     const cafe = cafeList.find(c => c.id === id);
-    document.getElementById('input-region').value = cafe.region;
-    document.getElementById('input-name').value = cafe.name;
-    document.getElementById('input-link').value = cafe.link;
-    document.getElementById('input-note').value = cafe.note;
+    if (!cafe) return;
+    
+    document.getElementById('input-region').value = cafe.region || '';
+    document.getElementById('input-name').value = cafe.name || '';
+    document.getElementById('input-link').value = cafe.link || '';
+    document.getElementById('input-note').value = cafe.note || '';
     
     editId = id;
     addBtn.textContent = '수정 완료';
@@ -218,7 +219,7 @@ window.deleteCafe = function(id) {
     }
 
     if (confirm('정말 삭제하시겠습니까?')) {
-        db.ref('cafes/' + id).remove();
+        db.ref('cafes/' + id).remove().catch(err => alert('삭제 권한 오류가 발생했습니다.'));
     }
 };
 
