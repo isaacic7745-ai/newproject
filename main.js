@@ -1,8 +1,8 @@
 // State Management
 let cafeList = JSON.parse(localStorage.getItem('cafeList')) || [];
-// Initialize with a default admin-issued account if no users exist
+// Initialize with admin-issued account using Korean username
 let users = JSON.parse(localStorage.getItem('users')) || [
-    { email: 'admin@test.com', password: '1234' }
+    { username: '관리자', password: '1234' }
 ];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
@@ -34,17 +34,17 @@ function updateAuthUI() {
 
 authForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('auth-email').value;
+    const username = document.getElementById('auth-username').value;
     const password = document.getElementById('auth-password').value;
 
-    // Login logic: Only checks against the existing 'users' list (Admin-issued)
-    const user = users.find(u => u.email === email && u.password === password);
+    // Login logic: Only checks against the existing 'users' list
+    const user = users.find(u => u.username === username && u.password === password);
     if (user) {
         currentUser = user;
         localStorage.setItem('currentUser', JSON.stringify(user));
         updateAuthUI();
     } else {
-        alert('이메일 또는 비밀번호가 일치하지 않거나, 발급되지 않은 계정입니다.');
+        alert('아이디 또는 비밀번호가 일치하지 않거나, 발급되지 않은 계정입니다.');
     }
 });
 
