@@ -39,6 +39,25 @@ body {
 .container {
     width: 100%;
     max-width: 1200px;
+    position: relative;
+}
+
+.user-info {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    padding: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .user-info {
+        position: static;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
 }
 
 /* Auth Styles */

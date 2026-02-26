@@ -9,7 +9,7 @@ const firebaseConfig = {
     databaseURL: "https://mom-cafe-list-1772089964-default-rtdb.firebaseio.com"
 };
 
-// Initialize Firebase (Singleton pattern to prevent re-initialization)
+// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -28,6 +28,7 @@ let users = [
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let editId = null;
 let isSubmitting = false;
+let clockInterval = null;
 
 // DOM Elements
 const authOverlay = document.getElementById('auth-overlay');
@@ -46,6 +47,9 @@ const inputSection = document.querySelector('.input-section');
 const addBtn = document.getElementById('add-btn');
 const body = document.body;
 
+const displayUsername = document.getElementById('display-username');
+const currentTimeDisplay = document.getElementById('current-time');
+
 // Load External Library (SheetJS)
 const script = document.createElement('script');
 script.src = "https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js";
@@ -53,10 +57,37 @@ document.head.appendChild(script);
 
 // --- Authentication Logic ---
 
+function startClock() {
+    if (clockInterval) clearInterval(clockInterval);
+    
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ko-KR', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+        });
+        const dateStr = now.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+        currentTimeDisplay.textContent = `${dateStr} ${timeStr}`;
+    }
+    
+    updateClock();
+    clockInterval = setInterval(updateClock, 1000);
+}
+
 function updateAuthUI() {
     if (currentUser) {
         authOverlay.style.display = 'none';
         mainContent.style.display = 'block';
+        
+        displayUsername.textContent = currentUser.username;
+        startClock();
+
         const isAdmin = currentUser.username === '관리자';
         if (inputSection) inputSection.style.display = isAdmin ? 'block' : 'none';
         if (exportBtn) exportBtn.style.display = isAdmin ? 'inline-block' : 'none';
@@ -65,6 +96,7 @@ function updateAuthUI() {
     } else {
         authOverlay.style.display = 'flex';
         mainContent.style.display = 'none';
+        if (clockInterval) clearInterval(clockInterval);
     }
 }
 
@@ -229,11 +261,9 @@ if (cafeForm) {
         
         isSubmitting = true;
         addBtn.disabled = true;
-        const originalBtnText = addBtn.textContent;
         addBtn.textContent = '처리 중...';
         
         try {
-            // [강력 조치] 서버 실시간 중복 체크
             const snapshot = await db.ref('cafes').once('value');
             const currentData = snapshot.val() || {};
             const isDuplicate = Object.keys(currentData).some(key => 
