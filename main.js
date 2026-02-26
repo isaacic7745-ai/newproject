@@ -102,13 +102,15 @@ function renderCafes(filter = '') {
             <td>${cafe.name}</td>
             <td><a href="${cafe.link}" target="_blank">방문하기</a></td>
             <td>
-                ${cafe.note}
-                ${isAdmin ? `
-                    <div style="margin-top: 5px;">
-                        <button class="edit-btn" onclick="editCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 3px; margin-right: 5px;">수정</button>
-                        <button class="delete-btn" onclick="deleteCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 3px;">삭제</button>
-                    </div>
-                ` : ''}
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${cafe.note}</span>
+                    ${isAdmin ? `
+                        <div style="display: flex; gap: 5px; flex-shrink: 0; margin-left: 10px;">
+                            <button class="edit-btn" onclick="editCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 3px;">수정</button>
+                            <button class="delete-btn" onclick="deleteCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 3px;">삭제</button>
+                        </div>
+                    ` : ''}
+                </div>
             </td>
         `;
         cafeListContainer.appendChild(row);
