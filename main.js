@@ -21,6 +21,7 @@ let users = JSON.parse(localStorage.getItem('users')) || [
 ];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let editId = null;
+let isSubmitting = false; // 중복 클릭 방지 플래그
 
 // DOM Elements
 const authOverlay = document.getElementById('auth-overlay');
@@ -103,7 +104,6 @@ logoutBtn.addEventListener('click', () => {
 // --- Helper Functions ---
 function normalizeLink(link) {
     if (!link) return "";
-    // 프로토콜(http, https) 및 www. 제거, 소문자화, 공백 제거, 끝 슬래시 제거
     return link.trim().toLowerCase()
         .replace(/^https?:\/\//, "")
         .replace(/^www\./, "")
@@ -169,8 +169,6 @@ if (importBtn) {
                         }
 
                         const normalizedLink = normalizeLink(rawLink);
-                        
-                        // 중복 체크 (정규화된 링크 비교)
                         const isDuplicate = cafeList.some(c => normalizeLink(c.link) === normalizedLink);
                         
                         if (isDuplicate) {
@@ -189,19 +187,12 @@ if (importBtn) {
                     });
                     
                     Promise.all(promises).then(() => {
-                        if (skippedCount > 0) {
-                            alert(`업로드 완료! (추가: ${addedCount}건, 중복 제외: ${skippedCount}건)`);
-                        } else {
-                            alert('모든 데이터 업로드가 완료되었습니다!');
-                        }
+                        alert(`업로드 완료! (추가: ${addedCount}건, 중복 제외: ${skippedCount}건)`);
                         excelUpload.value = '';
-                    }).catch(err => {
-                        console.error(err);
-                        alert('일부 데이터 업로드 중 오류가 발생했습니다.');
                     });
                 }
             } catch (err) {
-                alert('파일을 읽는 중 오류가 발생했습니다. 올바른 엑셀 파일인지 확인해주세요.');
+                alert('파일 오류가 발생했습니다.');
             }
         };
         reader.readAsBinaryString(file);
@@ -211,56 +202,24 @@ if (importBtn) {
 // --- Export Logic ---
 if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-        if (!window.XLSX) {
-            alert('라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-            return;
-        }
-
-        if (cafeList.length === 0) {
-            alert('내보낼 데이터가 없습니다.');
-            return;
-        }
-
+        if (!window.XLSX || cafeList.length === 0) return;
         const dataToExport = cafeList.map(cafe => ({
             '지역': cafe.region,
             '카페이름': cafe.name,
             '카페링크': cafe.link,
             '비고': cafe.note
         }));
-
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "맘카페 리스트");
-
-        const date = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(workbook, `전국_맘카페_리스트_${date}.xlsx`);
+        XLSX.writeFile(workbook, `전국_맘카페_리스트_${new Date().toISOString().split('T')[0]}.xlsx`);
     });
 }
 
 // --- Firebase Realtime Database Logic ---
 
-function migrateLocalData() {
-    if (currentUser && currentUser.username === '관리자') {
-        const localData = JSON.parse(localStorage.getItem('cafeList'));
-        if (localData && localData.length > 0) {
-            const promises = localData.map(cafe => {
-                const { id, ...cleanData } = cafe;
-                return db.ref('cafes').push(cleanData);
-            });
-            
-            Promise.all(promises).then(() => {
-                localStorage.removeItem('cafeList');
-                alert('기존 PC의 데이터를 클라우드로 동기화했습니다!');
-            });
-        }
-    }
-}
-
 function loadCafes() {
-    migrateLocalData();
-    
-    // First, get the data once to ensure cafeList is populated immediately
-    db.ref('cafes').once('value').then((snapshot) => {
+    db.ref('cafes').on('value', (snapshot) => {
         const data = snapshot.val();
         cafeList = [];
         if (data) {
@@ -269,27 +228,13 @@ function loadCafes() {
             });
         }
         renderCafes(searchInput.value);
-        
-        // Then setup the real-time listener for future changes
-        db.ref('cafes').on('value', (snapshot) => {
-            const data = snapshot.val();
-            cafeList = [];
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    cafeList.push({ id: key, ...data[key] });
-                });
-            }
-            renderCafes(searchInput.value);
-        });
     });
 }
 
 function renderCafes(filter = '') {
     if (!cafeListContainer) return;
     cafeListContainer.innerHTML = '';
-    
     const isAdmin = currentUser && currentUser.username === '관리자';
-    
     const filteredCafes = cafeList.filter(cafe => 
         (cafe.region && cafe.region.toLowerCase().includes(filter.toLowerCase())) || 
         (cafe.name && cafe.name.toLowerCase().includes(filter.toLowerCase()))
@@ -315,16 +260,13 @@ function renderCafes(filter = '') {
         `;
         cafeListContainer.appendChild(row);
     });
-
-    if (filteredCafes.length === 0) {
-        cafeListContainer.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">데이터가 없습니다.</td></tr>';
-    }
 }
 
 if (cafeForm) {
-    cafeForm.addEventListener('submit', (e) => {
+    cafeForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+        if (isSubmitting) return; // 연속 클릭 방지
+
         if (currentUser.username !== '관리자') {
             alert('권한이 없습니다.');
             return;
@@ -338,70 +280,72 @@ if (cafeForm) {
         
         const normalizedInputLink = normalizeLink(inputLink);
 
-        // 중복 체크: 수정 중인 항목을 제외한 리스트에서 정규화된 링크 비교
-        const isDuplicate = cafeList.some(cafe => {
-            const existingNormalized = normalizeLink(cafe.link);
-            return existingNormalized === normalizedInputLink && cafe.id !== editId;
-        });
+        isSubmitting = true;
+        addBtn.disabled = true;
+        addBtn.textContent = '처리 중...';
 
-        if (isDuplicate) {
-            alert('이미 등록 된 카페입니다.');
-            return;
-        }
+        try {
+            // [강력 조치] 서버에서 최신 데이터를 다시 가져와서 실시간 중복 체크
+            const snapshot = await db.ref('cafes').once('value');
+            const currentData = snapshot.val() || {};
+            
+            const isDuplicate = Object.keys(currentData).some(key => {
+                return normalizeLink(currentData[key].link) === normalizedInputLink && key !== editId;
+            });
 
-        const cafeData = {
-            region: document.getElementById('input-region').value,
-            name: document.getElementById('input-name').value,
-            link: inputLink,
-            note: document.getElementById('input-note').value
-        };
+            if (isDuplicate) {
+                alert('이미 등록 된 카페입니다.');
+                isSubmitting = false;
+                addBtn.disabled = false;
+                addBtn.textContent = editId ? '수정 완료' : '추가하기';
+                return;
+            }
 
-        if (editId) {
-            db.ref('cafes/' + editId).set(cafeData).then(() => {
+            const cafeData = {
+                region: document.getElementById('input-region').value,
+                name: document.getElementById('input-name').value,
+                link: inputLink,
+                note: document.getElementById('input-note').value
+            };
+
+            if (editId) {
+                await db.ref('cafes/' + editId).set(cafeData);
                 editId = null;
                 addBtn.textContent = '추가하기';
                 addBtn.style.backgroundColor = 'var(--accent-color)';
-                cafeForm.reset();
-            }).catch(err => alert('수정 중 오류가 발생했습니다.'));
-        } else {
-            db.ref('cafes').push(cafeData).then(() => {
-                cafeForm.reset();
-            }).catch(err => alert('추가 중 오류가 발생했습니다.'));
+            } else {
+                await db.ref('cafes').push(cafeData);
+            }
+            cafeForm.reset();
+        } catch (err) {
+            alert('오류가 발생했습니다.');
+        } finally {
+            isSubmitting = false;
+            addBtn.disabled = false;
+            if (!editId) addBtn.textContent = '추가하기';
         }
     });
 }
 
 window.editCafe = function(id) {
-    if (currentUser.username !== '관리자') return;
-    
     const cafe = cafeList.find(c => c.id === id);
     if (!cafe) return;
-    
     document.getElementById('input-region').value = cafe.region || '';
     document.getElementById('input-name').value = cafe.name || '';
     document.getElementById('input-link').value = cafe.link || '';
     document.getElementById('input-note').value = cafe.note || '';
-    
     editId = id;
     addBtn.textContent = '수정 완료';
     addBtn.style.backgroundColor = '#10b981';
-    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 window.deleteCafe = function(id) {
-    if (currentUser.username !== '관리자') return;
-
     if (confirm('정말 삭제하시겠습니까?')) {
-        db.ref('cafes/' + id).remove().catch(err => alert('삭제 중 오류가 발생했습니다.'));
+        db.ref('cafes/' + id).remove();
     }
 };
 
-if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-        renderCafes(e.target.value);
-    });
-}
+searchInput.addEventListener('input', (e) => renderCafes(e.target.value));
 
-// Initial UI Setup
 updateAuthUI();
