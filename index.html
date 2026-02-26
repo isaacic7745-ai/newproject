@@ -7,10 +7,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <h2 id="auth-title">로그인</h2>
+            <form id="auth-form">
+                <input type="email" id="auth-email" placeholder="이메일" required>
+                <input type="password" id="auth-password" placeholder="비밀번호" required>
+                <button type="submit" id="auth-submit-btn">로그인</button>
+            </form>
+            <p id="auth-switch-text">계정이 없으신가요? <a href="#" id="auth-switch-link">회원가입</a></p>
+        </div>
+    </div>
+
+    <div class="container" id="main-content" style="display: none;">
         <header>
             <div class="theme-toggle">
                 <button id="theme-btn">🌙 다크 모드</button>
+                <button id="logout-btn">로그아웃</button>
             </div>
             <h1>전국 맘카페 리스트</h1>
             <p>지역별 주요 맘카페 정보를 확인하세요.</p>
