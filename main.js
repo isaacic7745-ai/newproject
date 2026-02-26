@@ -98,16 +98,16 @@ function renderCafes(filter = '') {
     filteredCafes.forEach((cafe, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${cafe.region}</td>
-            <td>${cafe.name}</td>
-            <td><a href="${cafe.link}" target="_blank">방문하기</a></td>
-            <td>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+            <td data-label="지역">${cafe.region}</td>
+            <td data-label="카페이름">${cafe.name}</td>
+            <td data-label="카페링크"><a href="${cafe.link}" target="_blank">방문하기</a></td>
+            <td data-label="비고">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <span>${cafe.note}</span>
                     ${isAdmin ? `
                         <div style="display: flex; gap: 5px; flex-shrink: 0; margin-left: 10px;">
-                            <button class="edit-btn" onclick="editCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 3px;">수정</button>
-                            <button class="delete-btn" onclick="deleteCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 3px;">삭제</button>
+                            <button class="edit-btn" onclick="editCafe(${index})" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 5px;">수정</button>
+                            <button class="delete-btn" onclick="deleteCafe(${index})" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 5px;">삭제</button>
                         </div>
                     ` : ''}
                 </div>

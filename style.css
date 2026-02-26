@@ -57,10 +57,10 @@ body {
 
 .auth-card {
     background-color: var(--card-bg);
-    padding: 2.5rem;
+    padding: 2.5rem 1.5rem;
     border-radius: 1rem;
     box-shadow: var(--shadow);
-    width: 100%;
+    width: 90%;
     max-width: 400px;
     text-align: center;
     border: 1px solid var(--border-color);
@@ -278,9 +278,77 @@ footer {
     opacity: 0.7;
 }
 
-@media (max-width: 640px) {
-    th, td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.875rem;
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .input-section {
+        padding: 1rem;
+    }
+
+    .input-group {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    #add-btn {
+        grid-column: span 1;
+        padding: 0.8rem;
+    }
+
+    /* Table to Card Transformation */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tr {
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        background-color: var(--card-bg);
+        box-shadow: var(--shadow);
+    }
+
+    td {
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+        padding-left: 35%;
+        min-height: 3rem;
+        display: flex;
+        align-items: center;
+        text-align: right;
+        justify-content: flex-end;
+    }
+
+    td:last-child {
+        border-bottom: none;
+        flex-direction: column;
+        align-items: flex-end;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 30%;
+        font-weight: 600;
+        text-align: left;
+        color: var(--header-text);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    
+    td div {
+        width: 100%;
     }
 }
