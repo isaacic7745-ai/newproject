@@ -1,11 +1,26 @@
+// Firebase Configuration
+const firebaseConfig = {
+    projectId: "mom-cafe-list-1772089964",
+    appId: "1:578037896725:web:3d3b6365464dc233ea201c",
+    storageBucket: "mom-cafe-list-1772089964.firebasestorage.app",
+    apiKey: "AIzaSyA9q2WlNw9ySxMlx80U07xdI9nfbH-cNZE",
+    authDomain: "mom-cafe-list-1772089964.firebaseapp.com",
+    messagingSenderId: "578037896725",
+    databaseURL: "https://mom-cafe-list-1772089964-default-rtdb.firebaseio.com"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 // State Management
-let cafeList = JSON.parse(localStorage.getItem('cafeList')) || [];
+let cafeList = [];
 let users = JSON.parse(localStorage.getItem('users')) || [
     { username: '관리자', password: '1234' },
     { username: '이성민', password: '1234' }
 ];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-let editIndex = -1; // To track which cafe is being edited
+let editId = null; // Changed from index to ID for Firebase
 
 // DOM Elements
 const authOverlay = document.getElementById('auth-overlay');
@@ -29,13 +44,12 @@ function updateAuthUI() {
         authOverlay.style.display = 'none';
         mainContent.style.display = 'block';
         
-        // Only show input section to admin ('관리자')
         const isAdmin = currentUser.username === '관리자';
         if (inputSection) {
             inputSection.style.display = isAdmin ? 'block' : 'none';
         }
         
-        renderCafes();
+        loadCafes();
     } else {
         authOverlay.style.display = 'flex';
         mainContent.style.display = 'none';
@@ -82,7 +96,20 @@ themeBtn.addEventListener('click', () => {
     }
 });
 
-// --- Cafe Management Logic ---
+// --- Firebase Realtime Database Logic ---
+
+function loadCafes() {
+    db.ref('cafes').on('value', (snapshot) => {
+        const data = snapshot.val();
+        cafeList = [];
+        if (data) {
+            Object.keys(data).forEach(key => {
+                cafeList.push({ id: key, ...data[key] });
+            });
+        }
+        renderCafes(searchInput.value);
+    });
+}
 
 function renderCafes(filter = '') {
     if (!cafeListContainer) return;
@@ -95,7 +122,7 @@ function renderCafes(filter = '') {
         (cafe.name && cafe.name.toLowerCase().includes(filter.toLowerCase()))
     );
 
-    filteredCafes.forEach((cafe, index) => {
+    filteredCafes.forEach((cafe) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td data-label="지역">${cafe.region}</td>
@@ -106,8 +133,8 @@ function renderCafes(filter = '') {
                     <span>${cafe.note}</span>
                     ${isAdmin ? `
                         <div style="display: flex; gap: 5px; flex-shrink: 0; margin-left: 10px;">
-                            <button class="edit-btn" onclick="editCafe(${index})" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 5px;">수정</button>
-                            <button class="delete-btn" onclick="deleteCafe(${index})" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 5px;">삭제</button>
+                            <button class="edit-btn" onclick="editCafe('${cafe.id}')" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 5px;">수정</button>
+                            <button class="delete-btn" onclick="deleteCafe('${cafe.id}')" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 5px;">삭제</button>
                         </div>
                     ` : ''}
                 </div>
@@ -125,7 +152,6 @@ if (cafeForm) {
     cafeForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        // Security check
         if (currentUser.username !== '관리자') {
             alert('권한이 없습니다.');
             return;
@@ -138,49 +164,43 @@ if (cafeForm) {
             note: document.getElementById('input-note').value
         };
 
-        if (editIndex > -1) {
-            // Update existing
-            cafeList[editIndex] = cafeData;
-            editIndex = -1;
+        if (editId) {
+            db.ref('cafes/' + editId).set(cafeData);
+            editId = null;
             addBtn.textContent = '추가하기';
             addBtn.style.backgroundColor = 'var(--accent-color)';
         } else {
-            // Add new
-            cafeList.push(cafeData);
+            db.ref('cafes').push(cafeData);
         }
 
-        localStorage.setItem('cafeList', JSON.stringify(cafeList));
         cafeForm.reset();
-        renderCafes(searchInput.value);
     });
 }
 
-window.editCafe = function(index) {
+window.editCafe = function(id) {
     if (currentUser.username !== '관리자') return;
     
-    const cafe = cafeList[index];
+    const cafe = cafeList.find(c => c.id === id);
     document.getElementById('input-region').value = cafe.region;
     document.getElementById('input-name').value = cafe.name;
     document.getElementById('input-link').value = cafe.link;
     document.getElementById('input-note').value = cafe.note;
     
-    editIndex = index;
+    editId = id;
     addBtn.textContent = '수정 완료';
-    addBtn.style.backgroundColor = '#10b981'; // Green for edit mode
+    addBtn.style.backgroundColor = '#10b981';
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.deleteCafe = function(index) {
+window.deleteCafe = function(id) {
     if (currentUser.username !== '관리자') {
         alert('권한이 없습니다.');
         return;
     }
 
     if (confirm('정말 삭제하시겠습니까?')) {
-        cafeList.splice(index, 1);
-        localStorage.setItem('cafeList', JSON.stringify(cafeList));
-        renderCafes(searchInput.value);
+        db.ref('cafes/' + id).remove();
     }
 };
 
