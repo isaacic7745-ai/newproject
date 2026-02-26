@@ -90,11 +90,11 @@ body {
 
 .auth-logo {
     width: 100%;
-    height: 200px;
-    object-fit: cover; /* 이미지가 비율에 맞춰 꽉 차게 */
+    height: auto; /* 고정 높이 제거하여 전체 내용 노출 */
+    max-height: 250px;
+    object-fit: contain; /* 이미지 전체가 잘림 없이 보이도록 설정 */
     border-radius: 1rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
 }
 
 .auth-card h2 { 
