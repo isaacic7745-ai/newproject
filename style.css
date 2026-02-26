@@ -38,7 +38,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 1000px;
+    max-width: 1100px;
 }
 
 /* Auth Styles */
@@ -97,44 +97,7 @@ body {
     font-size: 1rem;
 }
 
-#auth-switch-text {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-}
-
-#logout-btn {
-    padding: 0.5rem 1rem;
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 9999px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    margin-left: 10px;
-}
-
-#export-btn {
-    padding: 0.5rem 1rem;
-    background-color: #10b981;
-    color: white;
-    border: none;
-    border-radius: 9999px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    margin-left: 10px;
-}
-
-#import-btn {
-    padding: 0.5rem 1rem;
-    background-color: #f59e0b;
-    color: white;
-    border: none;
-    border-radius: 9999px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    margin-left: 10px;
-}
-
+/* Header & Buttons */
 header {
     text-align: center;
     margin-bottom: 2.5rem;
@@ -154,46 +117,34 @@ h1 {
     gap: 0.5rem;
 }
 
-#theme-btn, #logout-btn, #import-btn, #export-btn {
-    margin-left: 0; /* Use gap instead */
-}
-
-@media (max-width: 600px) {
-    .theme-toggle {
-        justify-content: center;
-    }
-    
-    #theme-btn, #logout-btn, #import-btn, #export-btn {
-        flex: 1 1 45%; /* Two buttons per row on very small screens */
-        padding: 0.6rem 0.5rem;
-        font-size: 0.75rem;
-        text-align: center;
-        justify-content: center;
-        display: flex;
-        align-items: center;
-    }
-}
-
-
-#theme-btn {
+button {
     padding: 0.5rem 1rem;
     border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+}
+
+#theme-btn {
     border: 1px solid var(--border-color);
     background-color: var(--card-bg);
     color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
 }
 
 #theme-btn:hover {
     border-color: var(--accent-color);
 }
 
-.search-container {
-    margin-bottom: 1.5rem;
-}
+#import-btn { background-color: #f59e0b; color: white; }
+#export-btn { background-color: #10b981; color: white; }
+#logout-btn { background-color: #ef4444; color: white; }
+
+button:hover { opacity: 0.9; }
+
+/* Main Content */
+.search-container { margin-bottom: 1.5rem; }
 
 #search-input {
     width: 100%;
@@ -221,14 +172,11 @@ h1 {
     border: 1px solid var(--border-color);
 }
 
-.input-section h3 {
-    margin-bottom: 1rem;
-    color: var(--header-text);
-}
+.input-section h3 { margin-bottom: 1rem; color: var(--header-text); }
 
 .input-group {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1.5fr auto;
+    grid-template-columns: 0.5fr 1.2fr 1.5fr 1.5fr auto;
     gap: 0.5rem;
 }
 
@@ -242,39 +190,20 @@ h1 {
     outline: none;
 }
 
-.input-group input:focus {
-    border-color: var(--accent-color);
-}
-
 #add-btn {
-    padding: 0.6rem 1.2rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
     background-color: var(--accent-color);
     color: white;
-    border: none;
-    border-radius: 0.4rem;
-    cursor: pointer;
-    font-weight: 600;
-    transition: opacity 0.2s;
+    padding: 0.6rem 1.2rem;
 }
 
-#add-btn:hover {
-    opacity: 0.9;
-}
-
-@media (max-width: 850px) {
-    .input-group {
-        grid-template-columns: 1fr 1fr;
-    }
-    #add-btn {
-        grid-column: span 2;
-    }
-}
-
+/* Table */
 .table-wrapper {
     background-color: var(--card-bg);
     border-radius: 0.75rem;
     box-shadow: var(--shadow);
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid var(--border-color);
 }
 
@@ -282,6 +211,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    min-width: 800px;
 }
 
 th, td {
@@ -298,13 +228,8 @@ th {
     letter-spacing: 0.05em;
 }
 
-tbody tr:last-child td {
-    border-bottom: none;
-}
-
-tbody tr:hover {
-    background-color: var(--row-hover);
-}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background-color: var(--row-hover); }
 
 a {
     color: var(--accent-color);
@@ -312,14 +237,8 @@ a {
     word-break: break-all;
 }
 
-.cafe-url {
-    font-size: 0.85rem;
-    opacity: 0.9;
-}
-
-a:hover {
-    text-decoration: underline;
-}
+.cafe-url { font-size: 0.85rem; opacity: 0.9; }
+a:hover { text-decoration: underline; }
 
 footer {
     text-align: center;
@@ -329,36 +248,19 @@ footer {
     opacity: 0.7;
 }
 
+/* Responsive */
+@media (max-width: 900px) {
+    .input-group { grid-template-columns: 1fr 1fr; }
+    #add-btn { grid-column: span 2; }
+}
+
 @media (max-width: 768px) {
-    h1 {
-        font-size: 1.8rem;
-    }
+    h1 { font-size: 1.8rem; }
+    .table-wrapper { overflow-x: visible; }
+    table { min-width: 100%; }
 
-    .input-section {
-        padding: 1rem;
-    }
-
-    .input-group {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    #add-btn {
-        grid-column: span 1;
-        padding: 0.8rem;
-    }
-
-    /* Table to Card Transformation */
-    table, thead, tbody, th, td, tr {
-        display: block;
-        width: 100%;
-    }
-
-    thead tr {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-    }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
+    table, thead, tbody, th, td, tr { display: block; width: 100%; }
 
     tr {
         margin-bottom: 1.5rem;
@@ -396,24 +298,14 @@ footer {
         left: 1rem;
         width: 35%;
         font-weight: 700;
-        text-align: left;
         color: var(--accent-color);
         font-size: 0.75rem;
         text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        height: 100%;
-        top: 0;
     }
     
-    td[data-label="비고"]::before {
-        position: static;
-        width: 100%;
-        margin-bottom: 0.5rem;
-        height: auto;
-    }
+    td[data-label="비고"]::before { position: static; width: 100%; margin-bottom: 0.5rem; }
+    td div { width: 100%; }
 
-    td div {
-        width: 100%;
-    }
+    .theme-toggle { justify-content: center; }
+    #theme-btn, #logout-btn, #import-btn, #export-btn { flex: 1 1 45%; }
 }

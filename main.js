@@ -87,7 +87,10 @@ logoutBtn.addEventListener('click', () => {
 // --- Helper Functions ---
 function normalizeLink(link) {
     if (!link) return "";
-    return link.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+    return link.trim().toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .replace(/^www\./, "")
+        .replace(/\/$/, "");
 }
 
 // --- Theme Logic ---
@@ -141,7 +144,12 @@ if (importBtn) {
 if (exportBtn) {
     exportBtn.addEventListener('click', () => {
         if (!window.XLSX || cafeList.length === 0) return;
-        const data = cafeList.map(cafe => ({'지역': cafe.region, '카페이름': cafe.name, '카페링크': cafe.link, '비고': cafe.note}));
+        const data = cafeList.map(cafe => ({
+            '지역': cafe.region, 
+            '카페이름': cafe.name, 
+            '카페링크': cafe.link, 
+            '비고': cafe.note
+        }));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "맘카페 리스트");
@@ -193,8 +201,9 @@ function renderCafes(filter = '') {
         `;
         cafeListContainer.appendChild(row);
     });
+    
     if (filteredCafes.length === 0) {
-        cafeListContainer.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">데이터가 없습니다.</td></tr>';
+        cafeListContainer.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">데이터가 없습니다.</td></tr>';
     }
 }
 
@@ -202,14 +211,18 @@ if (cafeForm) {
     cafeForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (isSubmitting || !currentUser || currentUser.username !== '관리자') return;
+        
         const inputLink = document.getElementById('input-link').value.trim();
         const normalizedInputLink = normalizeLink(inputLink);
+        
         isSubmitting = true;
         addBtn.disabled = true;
+        
         try {
             const snapshot = await db.ref('cafes').once('value');
             const currentData = snapshot.val() || {};
             const isDuplicate = Object.keys(currentData).some(key => normalizeLink(currentData[key].link) === normalizedInputLink && key !== editId);
+            
             if (isDuplicate) {
                 alert('이미 등록 된 카페입니다.');
             } else {
@@ -252,7 +265,6 @@ window.editCafe = function(id) {
 };
 
 window.deleteCafe = function(id) {
-    if (!currentUser || currentUser.username !== '관리자') return;
     if (confirm('정말 삭제하시겠습니까?')) {
         db.ref('cafes/' + id).remove();
     }
