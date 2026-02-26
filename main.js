@@ -1,16 +1,16 @@
 // State Management
 let cafeList = JSON.parse(localStorage.getItem('cafeList')) || [];
-let users = JSON.parse(localStorage.getItem('users')) || [];
+// Initialize with a default admin-issued account if no users exist
+let users = JSON.parse(localStorage.getItem('users')) || [
+    { email: 'admin@test.com', password: '1234' }
+];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
 // DOM Elements
 const authOverlay = document.getElementById('auth-overlay');
 const mainContent = document.getElementById('main-content');
 const authForm = document.getElementById('auth-form');
-const authTitle = document.getElementById('auth-title');
 const authSubmitBtn = document.getElementById('auth-submit-btn');
-const authSwitchLink = document.getElementById('auth-switch-link');
-const authSwitchText = document.getElementById('auth-switch-text');
 const logoutBtn = document.getElementById('logout-btn');
 
 const cafeListContainer = document.getElementById('cafe-list');
@@ -18,8 +18,6 @@ const searchInput = document.getElementById('search-input');
 const themeBtn = document.getElementById('theme-btn');
 const cafeForm = document.getElementById('cafe-form');
 const body = document.body;
-
-let isLoginMode = true;
 
 // --- Authentication Logic ---
 
@@ -34,44 +32,19 @@ function updateAuthUI() {
     }
 }
 
-authSwitchLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    isLoginMode = !isLoginMode;
-    authTitle.textContent = isLoginMode ? '로그인' : '회원가입';
-    authSubmitBtn.textContent = isLoginMode ? '로그인' : '회원가입';
-    authSwitchText.innerHTML = isLoginMode 
-        ? '계정이 없으신가요? <a href="#" id="auth-switch-link">회원가입</a>'
-        : '이미 계정이 있으신가요? <a href="#" id="auth-switch-link">로그인</a>';
-    
-    // Re-bind the link event listener since we replaced the HTML
-    document.getElementById('auth-switch-link').addEventListener('click', arguments.callee);
-});
-
 authForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
 
-    if (isLoginMode) {
-        const user = users.find(u => u.email === email && u.password === password);
-        if (user) {
-            currentUser = user;
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            updateAuthUI();
-        } else {
-            alert('이메일 또는 비밀번호가 일치하지 않습니다.');
-        }
-    } else {
-        if (users.find(u => u.email === email)) {
-            alert('이미 존재하는 이메일입니다.');
-            return;
-        }
-        const newUser = { email, password };
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        currentUser = newUser;
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
+    // Login logic: Only checks against the existing 'users' list (Admin-issued)
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+        currentUser = user;
+        localStorage.setItem('currentUser', JSON.stringify(user));
         updateAuthUI();
+    } else {
+        alert('이메일 또는 비밀번호가 일치하지 않거나, 발급되지 않은 계정입니다.');
     }
 });
 
