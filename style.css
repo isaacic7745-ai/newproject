@@ -113,6 +113,17 @@ body {
     margin-left: 10px;
 }
 
+#export-btn {
+    padding: 0.5rem 1rem;
+    background-color: #10b981;
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 10px;
+}
+
 header {
     text-align: center;
     margin-bottom: 2.5rem;

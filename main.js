@@ -28,6 +28,7 @@ const mainContent = document.getElementById('main-content');
 const authForm = document.getElementById('auth-form');
 const authSubmitBtn = document.getElementById('auth-submit-btn');
 const logoutBtn = document.getElementById('logout-btn');
+const exportBtn = document.getElementById('export-btn');
 
 const cafeListContainer = document.getElementById('cafe-list');
 const searchInput = document.getElementById('search-input');
@@ -36,6 +37,11 @@ const cafeForm = document.getElementById('cafe-form');
 const inputSection = document.querySelector('.input-section');
 const addBtn = document.getElementById('add-btn');
 const body = document.body;
+
+// External Library Load (SheetJS)
+const script = document.createElement('script');
+script.src = "https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js";
+document.head.appendChild(script);
 
 // --- Authentication Logic ---
 
@@ -47,6 +53,11 @@ function updateAuthUI() {
         const isAdmin = currentUser.username === '관리자';
         if (inputSection) {
             inputSection.style.display = isAdmin ? 'block' : 'none';
+        }
+        
+        // Admin only visibility for export button
+        if (exportBtn) {
+            exportBtn.style.display = isAdmin ? 'inline-block' : 'none';
         }
         
         loadCafes();
@@ -95,6 +106,31 @@ themeBtn.addEventListener('click', () => {
         localStorage.setItem('theme', 'light');
     }
 });
+
+// --- Export Logic ---
+if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+        if (!window.XLSX) {
+            alert('라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+
+        const dataToExport = cafeList.map(cafe => ({
+            '지역': cafe.region,
+            '카페이름': cafe.name,
+            '카페링크': cafe.link,
+            '비고': cafe.note
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "맘카페 리스트");
+
+        // Generate date string for filename
+        const date = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(workbook, `전국_맘카페_리스트_${date}.xlsx`);
+    });
+}
 
 // --- Firebase Realtime Database Logic ---
 
