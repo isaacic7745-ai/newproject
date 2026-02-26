@@ -9,8 +9,10 @@ const firebaseConfig = {
     databaseURL: "https://mom-cafe-list-1772089964-default-rtdb.firebaseio.com"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase (Singleton pattern to prevent re-initialization)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 
 // State Management
@@ -168,6 +170,8 @@ function loadCafes() {
             });
         }
         renderCafes(searchInput.value);
+    }, (error) => {
+        console.error("Firebase load error:", error);
     });
 }
 
@@ -212,30 +216,39 @@ if (cafeForm) {
         e.preventDefault();
         if (isSubmitting || !currentUser || currentUser.username !== '관리자') return;
         
+        const regionInput = document.getElementById('input-region').value.trim();
+        const nameInput = document.getElementById('input-name').value.trim();
         const inputLink = document.getElementById('input-link').value.trim();
+        const noteInput = document.getElementById('input-note').value.trim();
+        
         const normalizedInputLink = normalizeLink(inputLink);
         
         isSubmitting = true;
         addBtn.disabled = true;
+        const originalBtnText = addBtn.textContent;
+        addBtn.textContent = '처리 중...';
         
         try {
+            // [강력 조치] 서버 실시간 중복 체크
             const snapshot = await db.ref('cafes').once('value');
             const currentData = snapshot.val() || {};
-            const isDuplicate = Object.keys(currentData).some(key => normalizeLink(currentData[key].link) === normalizedInputLink && key !== editId);
+            const isDuplicate = Object.keys(currentData).some(key => 
+                normalizeLink(currentData[key].link) === normalizedInputLink && key !== editId
+            );
             
             if (isDuplicate) {
                 alert('이미 등록 된 카페입니다.');
             } else {
                 const cafeData = {
-                    region: document.getElementById('input-region').value,
-                    name: document.getElementById('input-name').value,
+                    region: regionInput,
+                    name: nameInput,
                     link: inputLink,
-                    note: document.getElementById('input-note').value
+                    note: noteInput
                 };
+                
                 if (editId) {
                     await db.ref('cafes/' + editId).set(cafeData);
                     editId = null;
-                    addBtn.textContent = '추가하기';
                     addBtn.style.backgroundColor = 'var(--accent-color)';
                 } else {
                     await db.ref('cafes').push(cafeData);
@@ -243,10 +256,12 @@ if (cafeForm) {
                 cafeForm.reset();
             }
         } catch (err) {
-            alert('데이터 저장 중 오류가 발생했습니다.');
+            console.error("Save error:", err);
+            alert('데이터 저장 중 오류가 발생했습니다: ' + err.message);
         } finally {
             isSubmitting = false;
             addBtn.disabled = false;
+            addBtn.textContent = editId ? '수정 완료' : '추가하기';
         }
     });
 }
@@ -254,10 +269,10 @@ if (cafeForm) {
 window.editCafe = function(id) {
     const cafe = cafeList.find(c => c.id === id);
     if (!cafe) return;
-    document.getElementById('input-region').value = cafe.region;
-    document.getElementById('input-name').value = cafe.name;
-    document.getElementById('input-link').value = cafe.link;
-    document.getElementById('input-note').value = cafe.note;
+    document.getElementById('input-region').value = cafe.region || '';
+    document.getElementById('input-name').value = cafe.name || '';
+    document.getElementById('input-link').value = cafe.link || '';
+    document.getElementById('input-note').value = cafe.note || '';
     editId = id;
     addBtn.textContent = '수정 완료';
     addBtn.style.backgroundColor = '#10b981';
@@ -266,7 +281,7 @@ window.editCafe = function(id) {
 
 window.deleteCafe = function(id) {
     if (confirm('정말 삭제하시겠습니까?')) {
-        db.ref('cafes/' + id).remove();
+        db.ref('cafes/' + id).remove().catch(err => alert("삭제 오류: " + err.message));
     }
 };
 
