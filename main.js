@@ -40,10 +40,20 @@ const inputSection = document.querySelector('.input-section');
 const addBtn = document.getElementById('add-btn');
 const body = document.body;
 
-// External Library Load (SheetJS)
-const script = document.createElement('script');
-script.src = "https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js";
-document.head.appendChild(script);
+// Load External Library (SheetJS)
+function loadLibrary(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+loadLibrary("https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js")
+    .then(() => console.log('SheetJS Loaded'))
+    .catch(() => console.error('Failed to load SheetJS'));
 
 // --- Authentication Logic ---
 
@@ -57,7 +67,6 @@ function updateAuthUI() {
             inputSection.style.display = isAdmin ? 'block' : 'none';
         }
         
-        // Admin only visibility for export/import buttons
         if (exportBtn) exportBtn.style.display = isAdmin ? 'inline-block' : 'none';
         if (importBtn) importBtn.style.display = isAdmin ? 'inline-block' : 'none';
         
@@ -84,9 +93,11 @@ authForm.addEventListener('submit', (e) => {
 });
 
 logoutBtn.addEventListener('click', () => {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    updateAuthUI();
+    if (confirm('로그아웃 하시겠습니까?')) {
+        currentUser = null;
+        localStorage.removeItem('currentUser');
+        updateAuthUI();
+    }
 });
 
 // --- Theme Logic ---
@@ -110,7 +121,13 @@ themeBtn.addEventListener('click', () => {
 
 // --- Import Logic ---
 if (importBtn) {
-    importBtn.addEventListener('click', () => excelUpload.click());
+    importBtn.addEventListener('click', () => {
+        if (!window.XLSX) {
+            alert('라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+        excelUpload.click();
+    });
     
     excelUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -118,29 +135,39 @@ if (importBtn) {
 
         const reader = new FileReader();
         reader.onload = (evt) => {
-            const bstr = evt.target.result;
-            const wb = XLSX.read(bstr, { type: 'binary' });
-            const wsname = wb.SheetNames[0];
-            const ws = wb.Sheets[wsname];
-            const data = XLSX.utils.sheet_to_json(ws);
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
 
-            if (data.length === 0) {
-                alert('파일에 데이터가 없습니다.');
-                return;
-            }
+                if (data.length === 0) {
+                    alert('파일에 데이터가 없거나 형식이 잘못되었습니다.');
+                    return;
+                }
 
-            if (confirm(`${data.length}개의 데이터를 클라우드에 추가하시겠습니까?`)) {
-                data.forEach(item => {
-                    const cafeData = {
-                        region: item['지역'] || '',
-                        name: item['카페이름'] || '',
-                        link: item['카페링크'] || '',
-                        note: item['비고'] || ''
-                    };
-                    db.ref('cafes').push(cafeData);
-                });
-                alert('데이터 업로드가 완료되었습니다!');
-                excelUpload.value = ''; // Reset file input
+                if (confirm(`${data.length}개의 데이터를 클라우드에 추가하시겠습니까?`)) {
+                    const promises = data.map(item => {
+                        const cafeData = {
+                            region: item['지역'] || '',
+                            name: item['카페이름'] || '',
+                            link: item['카페링크'] || '',
+                            note: item['비고'] || ''
+                        };
+                        return db.ref('cafes').push(cafeData);
+                    });
+                    
+                    Promise.all(promises).then(() => {
+                        alert('모든 데이터 업로드가 완료되었습니다!');
+                        excelUpload.value = '';
+                    }).catch(err => {
+                        console.error(err);
+                        alert('일부 데이터 업로드 중 오류가 발생했습니다.');
+                    });
+                }
+            } catch (err) {
+                alert('파일을 읽는 중 오류가 발생했습니다. 올바른 엑셀 파일인지 확인해주세요.');
             }
         };
         reader.readAsBinaryString(file);
@@ -152,6 +179,11 @@ if (exportBtn) {
     exportBtn.addEventListener('click', () => {
         if (!window.XLSX) {
             alert('라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+
+        if (cafeList.length === 0) {
+            alert('내보낼 데이터가 없습니다.');
             return;
         }
 
@@ -177,12 +209,15 @@ function migrateLocalData() {
     if (currentUser && currentUser.username === '관리자') {
         const localData = JSON.parse(localStorage.getItem('cafeList'));
         if (localData && localData.length > 0) {
-            localData.forEach(cafe => {
+            const promises = localData.map(cafe => {
                 const { id, ...cleanData } = cafe;
-                db.ref('cafes').push(cleanData);
+                return db.ref('cafes').push(cleanData);
             });
-            localStorage.removeItem('cafeList');
-            alert('기존 PC의 데이터를 클라우드로 동기화했습니다. 이제 모든 기기에서 확인 가능합니다!');
+            
+            Promise.all(promises).then(() => {
+                localStorage.removeItem('cafeList');
+                alert('기존 PC의 데이터를 클라우드로 동기화했습니다!');
+            });
         }
     }
 }
@@ -260,11 +295,11 @@ if (cafeForm) {
                 addBtn.textContent = '추가하기';
                 addBtn.style.backgroundColor = 'var(--accent-color)';
                 cafeForm.reset();
-            }).catch(err => alert('수정 권한 오류가 발생했습니다. DB 설정을 확인해주세요.'));
+            }).catch(err => alert('수정 중 오류가 발생했습니다.'));
         } else {
             db.ref('cafes').push(cafeData).then(() => {
                 cafeForm.reset();
-            }).catch(err => alert('추가 권한 오류가 발생했습니다. DB 설정을 확인해주세요.'));
+            }).catch(err => alert('추가 중 오류가 발생했습니다.'));
         }
     });
 }
@@ -288,13 +323,10 @@ window.editCafe = function(id) {
 };
 
 window.deleteCafe = function(id) {
-    if (currentUser.username !== '관리자') {
-        alert('권한이 없습니다.');
-        return;
-    }
+    if (currentUser.username !== '관리자') return;
 
     if (confirm('정말 삭제하시겠습니까?')) {
-        db.ref('cafes/' + id).remove().catch(err => alert('삭제 권한 오류가 발생했습니다.'));
+        db.ref('cafes/' + id).remove().catch(err => alert('삭제 중 오류가 발생했습니다.'));
     }
 };
 

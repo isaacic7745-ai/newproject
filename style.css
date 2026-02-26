@@ -150,7 +150,30 @@ h1 {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
+
+#theme-btn, #logout-btn, #import-btn, #export-btn {
+    margin-left: 0; /* Use gap instead */
+}
+
+@media (max-width: 600px) {
+    .theme-toggle {
+        justify-content: center;
+    }
+    
+    #theme-btn, #logout-btn, #import-btn, #export-btn {
+        flex: 1 1 45%; /* Two buttons per row on very small screens */
+        padding: 0.6rem 0.5rem;
+        font-size: 0.75rem;
+        text-align: center;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+    }
+}
+
 
 #theme-btn {
     padding: 0.5rem 1rem;
