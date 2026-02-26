@@ -6,7 +6,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyA9q2WlNw9ySxMlx80U07xdI9nfbH-cNZE",
     authDomain: "mom-cafe-list-1772089964.firebaseapp.com",
     messagingSenderId: "578037896725",
-    databaseURL: "https://mom-cafe-list-1772089964-default-rtdb.asia-southeast1.firebasedatabase.app"
+    databaseURL: "https://mom-cafe-list-1772089964-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
