@@ -1,10 +1,10 @@
 // State Management
 let cafeList = JSON.parse(localStorage.getItem('cafeList')) || [];
-// Initialize with admin-issued account using Korean username
 let users = JSON.parse(localStorage.getItem('users')) || [
     { username: '관리자', password: '1234' }
 ];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+let editIndex = -1; // To track which cafe is being edited
 
 // DOM Elements
 const authOverlay = document.getElementById('auth-overlay');
@@ -17,6 +17,8 @@ const cafeListContainer = document.getElementById('cafe-list');
 const searchInput = document.getElementById('search-input');
 const themeBtn = document.getElementById('theme-btn');
 const cafeForm = document.getElementById('cafe-form');
+const inputSection = document.querySelector('.input-section');
+const addBtn = document.getElementById('add-btn');
 const body = document.body;
 
 // --- Authentication Logic ---
@@ -25,6 +27,13 @@ function updateAuthUI() {
     if (currentUser) {
         authOverlay.style.display = 'none';
         mainContent.style.display = 'block';
+        
+        // Only show input section to admin ('관리자')
+        const isAdmin = currentUser.username === '관리자';
+        if (inputSection) {
+            inputSection.style.display = isAdmin ? 'block' : 'none';
+        }
+        
         renderCafes();
     } else {
         authOverlay.style.display = 'flex';
@@ -37,7 +46,6 @@ authForm.addEventListener('submit', (e) => {
     const username = document.getElementById('auth-username').value;
     const password = document.getElementById('auth-password').value;
 
-    // Login logic: Only checks against the existing 'users' list
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
         currentUser = user;
@@ -79,6 +87,8 @@ function renderCafes(filter = '') {
     if (!cafeListContainer) return;
     cafeListContainer.innerHTML = '';
     
+    const isAdmin = currentUser && currentUser.username === '관리자';
+    
     const filteredCafes = cafeList.filter(cafe => 
         (cafe.region && cafe.region.toLowerCase().includes(filter.toLowerCase())) || 
         (cafe.name && cafe.name.toLowerCase().includes(filter.toLowerCase()))
@@ -92,34 +102,78 @@ function renderCafes(filter = '') {
             <td><a href="${cafe.link}" target="_blank">방문하기</a></td>
             <td>
                 ${cafe.note}
-                <button class="delete-btn" onclick="deleteCafe(${index})" style="margin-left: 10px; padding: 2px 5px; font-size: 10px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 3px;">삭제</button>
+                ${isAdmin ? `
+                    <div style="margin-top: 5px;">
+                        <button class="edit-btn" onclick="editCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 3px; margin-right: 5px;">수정</button>
+                        <button class="delete-btn" onclick="deleteCafe(${index})" style="padding: 2px 8px; font-size: 11px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 3px;">삭제</button>
+                    </div>
+                ` : ''}
             </td>
         `;
         cafeListContainer.appendChild(row);
     });
 
     if (filteredCafes.length === 0) {
-        cafeListContainer.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">데이터가 없습니다. 위 양식을 통해 추가해 보세요!</td></tr>';
+        cafeListContainer.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">데이터가 없습니다.</td></tr>';
     }
 }
 
 if (cafeForm) {
     cafeForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const newCafe = {
+        
+        // Security check
+        if (currentUser.username !== '관리자') {
+            alert('권한이 없습니다.');
+            return;
+        }
+
+        const cafeData = {
             region: document.getElementById('input-region').value,
             name: document.getElementById('input-name').value,
             link: document.getElementById('input-link').value,
             note: document.getElementById('input-note').value
         };
-        cafeList.push(newCafe);
+
+        if (editIndex > -1) {
+            // Update existing
+            cafeList[editIndex] = cafeData;
+            editIndex = -1;
+            addBtn.textContent = '추가하기';
+            addBtn.style.backgroundColor = 'var(--accent-color)';
+        } else {
+            // Add new
+            cafeList.push(cafeData);
+        }
+
         localStorage.setItem('cafeList', JSON.stringify(cafeList));
         cafeForm.reset();
         renderCafes(searchInput.value);
     });
 }
 
+window.editCafe = function(index) {
+    if (currentUser.username !== '관리자') return;
+    
+    const cafe = cafeList[index];
+    document.getElementById('input-region').value = cafe.region;
+    document.getElementById('input-name').value = cafe.name;
+    document.getElementById('input-link').value = cafe.link;
+    document.getElementById('input-note').value = cafe.note;
+    
+    editIndex = index;
+    addBtn.textContent = '수정 완료';
+    addBtn.style.backgroundColor = '#10b981'; // Green for edit mode
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 window.deleteCafe = function(index) {
+    if (currentUser.username !== '관리자') {
+        alert('권한이 없습니다.');
+        return;
+    }
+
     if (confirm('정말 삭제하시겠습니까?')) {
         cafeList.splice(index, 1);
         localStorage.setItem('cafeList', JSON.stringify(cafeList));
