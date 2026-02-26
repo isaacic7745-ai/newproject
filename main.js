@@ -103,7 +103,11 @@ logoutBtn.addEventListener('click', () => {
 // --- Helper Functions ---
 function normalizeLink(link) {
     if (!link) return "";
-    return link.trim().toLowerCase().replace(/\/$/, ""); // 공백 제거, 소문자화, 끝 슬래시 제거
+    // 프로토콜(http, https) 및 www. 제거, 소문자화, 공백 제거, 끝 슬래시 제거
+    return link.trim().toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .replace(/^www\./, "")
+        .replace(/\/$/, "");
 }
 
 // --- Theme Logic ---
@@ -158,10 +162,16 @@ if (importBtn) {
                     let skippedCount = 0;
 
                     const promises = data.map(item => {
-                        const link = normalizeLink(item['카페링크'] || '');
+                        const rawLink = (item['카페링크'] || '').toString().trim();
+                        if (!rawLink) {
+                            skippedCount++;
+                            return Promise.resolve();
+                        }
+
+                        const normalizedLink = normalizeLink(rawLink);
                         
                         // 중복 체크 (정규화된 링크 비교)
-                        const isDuplicate = cafeList.some(c => normalizeLink(c.link) === link);
+                        const isDuplicate = cafeList.some(c => normalizeLink(c.link) === normalizedLink);
                         
                         if (isDuplicate) {
                             skippedCount++;
@@ -172,7 +182,7 @@ if (importBtn) {
                         const cafeData = {
                             region: item['지역'] || '',
                             name: item['카페이름'] || '',
-                            link: (item['카페링크'] || '').trim(),
+                            link: rawLink,
                             note: item['비고'] || ''
                         };
                         return db.ref('cafes').push(cafeData);
@@ -307,12 +317,18 @@ if (cafeForm) {
         }
 
         const inputLink = document.getElementById('input-link').value.trim();
+        if (!inputLink) {
+            alert('카페 링크를 입력해주세요.');
+            return;
+        }
+        
         const normalizedInputLink = normalizeLink(inputLink);
 
         // 중복 체크: 수정 중인 항목을 제외한 리스트에서 정규화된 링크 비교
-        const isDuplicate = cafeList.some(cafe => 
-            normalizeLink(cafe.link) === normalizedInputLink && cafe.id !== editId
-        );
+        const isDuplicate = cafeList.some(cafe => {
+            const existingNormalized = normalizeLink(cafe.link);
+            return existingNormalized === normalizedInputLink && cafe.id !== editId;
+        });
 
         if (isDuplicate) {
             alert('이미 등록 된 카페입니다.');
