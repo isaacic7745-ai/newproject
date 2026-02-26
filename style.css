@@ -292,43 +292,48 @@ footer { text-align: center; margin-top: 3rem; font-size: 0.875rem; opacity: 0.7
         box-shadow: var(--shadow);
         overflow: hidden;
     }
-    td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: right;
-        border-bottom: 1px solid var(--border-color);
-        padding: 1rem;
-        width: 100% !important;
-        white-space: normal !important; /* 모바일은 줄바꿈 허용 */
-    }
-    /* No.와 지역을 한 줄에 좌우로 배치 */
-    td[data-label="No."], td[data-label="지역"] {
-        width: 50% !important;
-        justify-content: center; /* 가로 가운데 정렬 */
-        text-align: center;
-        flex-direction: column; /* 라벨과 내용을 세로로 배치하여 가운데 정렬 */
-        gap: 0.25rem;
-    }
+        td {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.8rem 1rem;
+            width: 100% !important;
+            white-space: normal !important;
+        }
     
-    td[data-label="No."]::before, td[data-label="지역"]::before {
-        position: static; /* 절대 위치 해제 */
-        width: auto;
-        margin-bottom: 0;
-    }
-    td[data-label="No."] {
-        border-right: 1px solid var(--border-color);
-    }
-    td:last-child { border-bottom: none; background-color: var(--row-hover); }
-    td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        color: var(--accent-color);
-        font-size: 0.8rem;
-        text-align: left;
-    }
-    td[data-label="비고"] { flex-direction: column; align-items: flex-start; text-align: left; }
-    td[data-label="비고"]::before { margin-bottom: 0.5rem; }
+        td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: var(--accent-color);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            text-align: left;
+            width: 70px; /* 라벨 너비 고정 (좌측 정렬 효과) */
+            flex-shrink: 0;
+        }
+    
+        /* 데이터 내용 가운데 정렬 */
+        td > span, td > a, td > div {
+            flex-grow: 1;
+            text-align: center;
+            display: block;
+        }
+    
+        /* No.와 지역을 한 줄에 좌우로 배치 */
+        td[data-label="No."], td[data-label="지역"] {
+            width: 50% !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        td[data-label="No."] {
+            border-right: 1px solid var(--border-color);
+        }
+    
+        td:last-child { border-bottom: none; background-color: var(--row-hover); }
+        
+        td[data-label="비고"] { flex-direction: column; align-items: stretch; }
+        td[data-label="비고"]::before { width: 100%; margin-bottom: 0.5rem; }
+        td[data-label="비고"] > div { text-align: center; }
     .theme-toggle { justify-content: center; }
     #theme-btn, #logout-btn, #import-btn, #export-btn { flex: 1 1 45%; }
 }

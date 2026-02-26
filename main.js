@@ -223,9 +223,9 @@ function renderCafes(filter = '') {
     filteredCafes.forEach((cafe, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td data-label="No.">${index + 1}</td>
-            <td data-label="지역">${cafe.region}</td>
-            <td data-label="카페이름">${cafe.name}</td>
+            <td data-label="No."><span>${index + 1}</span></td>
+            <td data-label="지역"><span>${cafe.region}</span></td>
+            <td data-label="카페이름"><span>${cafe.name}</span></td>
             <td data-label="카페링크"><a href="${cafe.link}" target="_blank" class="cafe-url">${cafe.link}</a></td>
             <td data-label="비고">
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
