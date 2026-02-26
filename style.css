@@ -124,6 +124,17 @@ body {
     margin-left: 10px;
 }
 
+#import-btn {
+    padding: 0.5rem 1rem;
+    background-color: #f59e0b;
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 10px;
+}
+
 header {
     text-align: center;
     margin-bottom: 2.5rem;

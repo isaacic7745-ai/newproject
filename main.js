@@ -29,6 +29,8 @@ const authForm = document.getElementById('auth-form');
 const authSubmitBtn = document.getElementById('auth-submit-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const exportBtn = document.getElementById('export-btn');
+const importBtn = document.getElementById('import-btn');
+const excelUpload = document.getElementById('excel-upload');
 
 const cafeListContainer = document.getElementById('cafe-list');
 const searchInput = document.getElementById('search-input');
@@ -55,10 +57,9 @@ function updateAuthUI() {
             inputSection.style.display = isAdmin ? 'block' : 'none';
         }
         
-        // Admin only visibility for export button
-        if (exportBtn) {
-            exportBtn.style.display = isAdmin ? 'inline-block' : 'none';
-        }
+        // Admin only visibility for export/import buttons
+        if (exportBtn) exportBtn.style.display = isAdmin ? 'inline-block' : 'none';
+        if (importBtn) importBtn.style.display = isAdmin ? 'inline-block' : 'none';
         
         loadCafes();
     } else {
@@ -107,6 +108,45 @@ themeBtn.addEventListener('click', () => {
     }
 });
 
+// --- Import Logic ---
+if (importBtn) {
+    importBtn.addEventListener('click', () => excelUpload.click());
+    
+    excelUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const bstr = evt.target.result;
+            const wb = XLSX.read(bstr, { type: 'binary' });
+            const wsname = wb.SheetNames[0];
+            const ws = wb.Sheets[wsname];
+            const data = XLSX.utils.sheet_to_json(ws);
+
+            if (data.length === 0) {
+                alert('파일에 데이터가 없습니다.');
+                return;
+            }
+
+            if (confirm(`${data.length}개의 데이터를 클라우드에 추가하시겠습니까?`)) {
+                data.forEach(item => {
+                    const cafeData = {
+                        region: item['지역'] || '',
+                        name: item['카페이름'] || '',
+                        link: item['카페링크'] || '',
+                        note: item['비고'] || ''
+                    };
+                    db.ref('cafes').push(cafeData);
+                });
+                alert('데이터 업로드가 완료되었습니다!');
+                excelUpload.value = ''; // Reset file input
+            }
+        };
+        reader.readAsBinaryString(file);
+    });
+}
+
 // --- Export Logic ---
 if (exportBtn) {
     exportBtn.addEventListener('click', () => {
@@ -126,7 +166,6 @@ if (exportBtn) {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "맘카페 리스트");
 
-        // Generate date string for filename
         const date = new Date().toISOString().split('T')[0];
         XLSX.writeFile(workbook, `전국_맘카페_리스트_${date}.xlsx`);
     });
