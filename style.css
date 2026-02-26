@@ -176,10 +176,10 @@ th, td {
 
 /* 데스크탑 컬럼 너비 설정 */
 th:nth-child(1), td:nth-child(1) { width: 60px; text-align: center; } /* No. */
-th:nth-child(2), td:nth-child(2) { width: 120px; text-align: center; } /* 지역 */
-th:nth-child(3), td:nth-child(3) { width: 200px; } /* 카페이름 */
-th:nth-child(4), td:nth-child(4) { width: auto; } /* 카페링크 */
-th:nth-child(5), td:nth-child(5) { width: 300px; } /* 비고 */
+th:nth-child(2), td:nth-child(2) { width: 180px; text-align: center; } /* 지역 (늘림: 120px -> 180px) */
+th:nth-child(3), td:nth-child(3) { width: 220px; } /* 카페이름 */
+th:nth-child(4), td:nth-child(4) { width: 350px; } /* 카페링크 (고정/줄임) */
+th:nth-child(5), td:nth-child(5) { width: auto; } /* 비고 (유동적으로 변경) */
 
 th {
     background-color: var(--row-hover);
