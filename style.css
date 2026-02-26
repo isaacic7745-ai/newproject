@@ -176,12 +176,12 @@ th, td {
     word-break: break-all;
 }
 
-/* 데스크탑 컬럼 너비 설정 (더욱 확실한 너비 배분) */
+/* 데스크탑 컬럼 너비 설정 (카페링크 확대, 비고 축소) */
 th:nth-child(1), td:nth-child(1) { width: 60px; text-align: center; } /* No. */
-th:nth-child(2), td:nth-child(2) { width: 300px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 지역 (대폭 확장) */
+th:nth-child(2), td:nth-child(2) { width: 250px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 지역 */
 th:nth-child(3), td:nth-child(3) { width: 200px; } /* 카페이름 */
-th:nth-child(4), td:nth-child(4) { width: 180px; } /* 카페링크 (대폭 축소) */
-th:nth-child(5), td:nth-child(5) { width: auto; } /* 비고 (남은 전체 공간) */
+th:nth-child(4), td:nth-child(4) { width: 350px; } /* 카페링크 (늘림: 180px -> 350px) */
+th:nth-child(5), td:nth-child(5) { width: 250px; } /* 비고 (줄임: auto -> 250px) */
 
 th {
     background-color: var(--row-hover);
