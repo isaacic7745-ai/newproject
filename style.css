@@ -440,6 +440,19 @@ footer {
         width: 20% !important;
         border-bottom: 1px solid var(--border-color);
         border-right: 1px solid var(--border-color);
+        justify-content: center; /* 가로 가운데 정렬 */
+        padding: 0.8rem 0; /* 좌우 패딩 조정 */
+    }
+    
+    td[data-label="No."]::before {
+        display: none; /* No. 라벨 숨김 (숫자만 강조하여 중앙 배치) */
+    }
+
+    td[data-label="No."] > span {
+        margin-left: 0;
+        text-align: center;
+        font-weight: 700;
+        color: var(--accent-color);
     }
     
     td[data-label="지역"] {
