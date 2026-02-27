@@ -328,7 +328,7 @@ h1 {
     background-color: var(--card-bg);
     border-radius: 0.75rem;
     box-shadow: var(--shadow);
-    overflow: hidden;
+    overflow-x: auto; /* 가로 스크롤 활성화 */
     border: 1px solid var(--border-color);
 }
 
