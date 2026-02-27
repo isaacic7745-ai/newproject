@@ -319,14 +319,16 @@ footer { text-align: center; margin-top: 3rem; font-size: 0.875rem; opacity: 0.7
                 display: block;
             }
         
-            /* 지역 정보만 라벨 바로 옆으로 배치 */
-            td[data-label="지역"] > span {
-                flex-grow: 0;
-                text-align: left;
-                margin-left: 0.5rem;
-            }
-        
-            /* No.와 지역을 한 줄에 좌우로 배치 */        td[data-label="No."], td[data-label="지역"] {
+                    /* No.와 지역 칸 정렬 조정 */
+                    td[data-label="No."], td[data-label="지역"] {
+                        justify-content: flex-start;
+                    }
+                    
+                    td[data-label="No."] > span, td[data-label="지역"] > span {
+                        flex-grow: 0;
+                        text-align: left;
+                        margin-left: 0.5rem;
+                    }            /* No.와 지역을 한 줄에 좌우로 배치 */        td[data-label="No."], td[data-label="지역"] {
             width: 50% !important;
             border-bottom: 1px solid var(--border-color);
         }
