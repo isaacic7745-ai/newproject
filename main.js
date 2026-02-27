@@ -50,6 +50,9 @@ const body = document.body;
 const displayUsername = document.getElementById('display-username');
 const currentTimeDisplay = document.getElementById('current-time');
 
+const scrollTopBtn = document.getElementById('scroll-top-btn');
+const scrollBottomBtn = document.getElementById('scroll-bottom-btn');
+
 // Load External Library (SheetJS)
 const script = document.createElement('script');
 script.src = "https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js";
@@ -59,23 +62,12 @@ document.head.appendChild(script);
 
 function startClock() {
     if (clockInterval) clearInterval(clockInterval);
-    
     function updateClock() {
         const now = new Date();
-        const timeStr = now.toLocaleTimeString('ko-KR', { 
-            hour12: false, 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit' 
-        });
-        const dateStr = now.toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
+        const timeStr = now.toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
         currentTimeDisplay.textContent = `${dateStr} ${timeStr}`;
     }
-    
     updateClock();
     clockInterval = setInterval(updateClock, 1000);
 }
@@ -84,10 +76,8 @@ function updateAuthUI() {
     if (currentUser) {
         authOverlay.style.display = 'none';
         mainContent.style.display = 'block';
-        
         displayUsername.textContent = currentUser.username;
         startClock();
-
         const isAdmin = currentUser.username === '관리자';
         if (inputSection) inputSection.style.display = isAdmin ? 'block' : 'none';
         if (exportBtn) exportBtn.style.display = isAdmin ? 'inline-block' : 'none';
@@ -125,10 +115,7 @@ logoutBtn.addEventListener('click', () => {
 // --- Helper Functions ---
 function normalizeLink(link) {
     if (!link) return "";
-    return link.trim().toLowerCase()
-        .replace(/^https?:\/\//, "")
-        .replace(/^www\./, "")
-        .replace(/\/$/, "");
+    return link.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
 }
 
 // --- Theme Logic ---
@@ -148,6 +135,14 @@ themeBtn.addEventListener('click', () => {
         localStorage.setItem('theme', 'light');
     }
 });
+
+// --- Floating Scroll Logic ---
+if (scrollTopBtn) {
+    scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+if (scrollBottomBtn) {
+    scrollBottomBtn.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+}
 
 // --- Import/Export Logic ---
 if (importBtn) {
@@ -182,12 +177,7 @@ if (importBtn) {
 if (exportBtn) {
     exportBtn.addEventListener('click', () => {
         if (!window.XLSX || cafeList.length === 0) return;
-        const data = cafeList.map(cafe => ({
-            '지역': cafe.region, 
-            '카페이름': cafe.name, 
-            '카페링크': cafe.link, 
-            '비고': cafe.note
-        }));
+        const data = cafeList.map(cafe => ({'지역': cafe.region, '카페이름': cafe.name, '카페링크': cafe.link, '비고': cafe.note}));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "맘카페 리스트");
@@ -273,13 +263,7 @@ if (cafeForm) {
             if (isDuplicate) {
                 alert('이미 등록 된 카페입니다.');
             } else {
-                const cafeData = {
-                    region: regionInput,
-                    name: nameInput,
-                    link: inputLink,
-                    note: noteInput
-                };
-                
+                const cafeData = { region: regionInput, name: nameInput, link: inputLink, note: noteInput };
                 if (editId) {
                     await db.ref('cafes/' + editId).set(cafeData);
                     editId = null;
