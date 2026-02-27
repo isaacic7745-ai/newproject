@@ -435,15 +435,15 @@ footer {
         margin-left: 0.5rem;
     }
 
-    /* No.와 지역을 한 줄에 좌우로 배치 (30%:70% 비율) */
+    /* No.와 지역을 한 줄에 좌우로 배치 (20%:80% 비율) */
     td[data-label="No."] {
-        width: 30% !important;
+        width: 20% !important;
         border-bottom: 1px solid var(--border-color);
         border-right: 1px solid var(--border-color);
     }
     
     td[data-label="지역"] {
-        width: 70% !important;
+        width: 80% !important;
         border-bottom: 1px solid var(--border-color);
     }
 
