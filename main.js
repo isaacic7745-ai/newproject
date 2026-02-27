@@ -18,12 +18,7 @@ const db = firebase.database();
 // State Management
 let cafeList = [];
 let users = [
-    { username: '관리자', password: '1q2w3e4r' },
-    { username: '이성민', password: '1234' },
-    { username: '이한빛', password: '1234' },
-    { username: '강도현', password: '1234' },
-    { username: '가인표', password: '1234' },
-    { username: '김하린', password: '1234' }
+    { username: '관리자', password: '1q2w3e4r' }
 ];
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let editId = null;
