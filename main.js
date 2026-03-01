@@ -111,7 +111,7 @@ logoutBtn.addEventListener('click', () => {
 // --- Helper Functions ---
 function normalizeLink(link) {
     if (!link) return "";
-    return link.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+    return link.toString().trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
 }
 
 // --- Theme Logic ---
@@ -214,12 +214,12 @@ function renderCafes(filter = '') {
             <td data-label="카페이름"><span>${cafe.name}</span></td>
             <td data-label="카페링크"><a href="${cafe.link}" target="_blank" class="cafe-url">${cafe.link}</a></td>
             <td data-label="비고">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <span>${cafe.note}</span>
+                <div class="note-container">
+                    <span class="note-text">${cafe.note}</span>
                     ${isAdmin ? `
-                        <div style="display: flex; gap: 5px; flex-shrink: 0; margin-left: 10px;">
-                            <button class="edit-btn" onclick="editCafe('${cafe.id}')" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 5px;">수정</button>
-                            <button class="delete-btn" onclick="deleteCafe('${cafe.id}')" style="padding: 5px 10px; font-size: 12px; cursor: pointer; background: #ff4d4d; color: white; border: none; border-radius: 5px;">삭제</button>
+                        <div class="admin-actions">
+                            <button class="edit-btn" onclick="editCafe('${cafe.id}')">수정</button>
+                            <button class="delete-btn" onclick="deleteCafe('${cafe.id}')">삭제</button>
                         </div>
                     ` : ''}
                 </div>

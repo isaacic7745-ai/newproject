@@ -88,23 +88,17 @@ body {
     align-items: center;
 }
 
-.auth-logo {
-    width: 100%;
-    height: auto;
-    max-height: 250px;
-    object-fit: contain;
-    border-radius: 1rem;
-    margin-bottom: 1.5rem;
-}
-
 .auth-card h2 { 
     margin-bottom: 0.5rem; 
     color: var(--header-text); 
     font-size: 1.75rem;
 }
 
-.auth-card p {
-    margin-bottom: 2rem !important;
+.auth-description {
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.8;
 }
 
 .auth-card form { 
@@ -294,10 +288,8 @@ h1 {
     color: var(--text-color);
     font-size: 0.9rem;
     outline: none;
-}
-
-.input-group input:focus {
-    border-color: var(--accent-color);
+    width: 100%;
+    min-width: 0;
 }
 
 #add-btn {
@@ -309,6 +301,7 @@ h1 {
     cursor: pointer;
     font-weight: 600;
     transition: opacity 0.2s;
+    white-space: nowrap;
 }
 
 #add-btn:hover {
@@ -321,6 +314,23 @@ h1 {
     }
     #add-btn {
         grid-column: span 2;
+    }
+}
+
+@media (max-width: 600px) {
+    .input-group {
+        grid-template-columns: 1fr;
+    }
+    #add-btn {
+        grid-column: span 1;
+    }
+    .input-section {
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+    .input-section h3 {
+        font-size: 1.2rem;
+        text-align: center;
     }
 }
 
@@ -381,6 +391,63 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+.note-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.note-text {
+    flex-grow: 1;
+    word-break: break-all;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+.admin-actions button {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.edit-btn {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.delete-btn {
+    background-color: #ef4444;
+    color: white;
+}
+
+.admin-actions button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .note-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .admin-actions {
+        margin-left: 0;
+        margin-top: 10px;
+        justify-content: flex-end;
+    }
 }
 
 footer {
